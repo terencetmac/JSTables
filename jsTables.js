@@ -77,8 +77,11 @@ class JsTable {
         let ths = e.target.parentElement.getElementsByTagName('th');
         for (let i = 0; i < ths.length; i++) {
           ths[i].removeAttribute('aria-sort');
+          ths[i].classList.remove('ascending');
+          ths[i].classList.remove('descending');
         }
         e.target.setAttribute('aria-sort', ariaSort);
+        e.target.classList.add(ariaSort);
       }
     });
   }
