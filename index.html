@@ -58,6 +58,19 @@
       cursor: not-allowed;
     }
 
+    .t-show__col {
+      display: block;
+      cursor: pointer;
+    }
+
+    .t-show {
+      border: 1px solid #ccc;
+    }
+
+    .t-show__toggle {
+      cursor: pointer;
+    }
+
   </style>
 
 </head>
@@ -68,12 +81,16 @@
     <label>Show 
       <select id="data_table_action">
         <option selected>10</option>
-        <option>20</option>
+        <option>20</optiofdsan>
         <option>50</option>
         <option>100</option>
       </select>
        entries
     </label>
+
+    <span id="data_table_show-columns" class="t-show__toggle">Show Columns</span>
+    <div id="data_table_show" class="t-show" style="display: none;"></div>
+
   </div>
   <table id="data_table" width=100%></table>
   <div id="data_table_pagination" class="t-page">

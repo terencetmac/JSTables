@@ -21,6 +21,7 @@ class JsTable {
     this._pages = {};
     this._showingPage = 0;
     this._pageLimit = 10;
+    this._showHideBox = false;
 
     this.initialize();
   }
@@ -31,17 +32,7 @@ class JsTable {
     // #2 if have this.columns
     if (this.columns) {
       // generate Table Header
-      let tHead = document.createElement('thead');
-      let tRow = document.createElement('tr');
-
-      this.columns.forEach((column, key) => {
-        let tHeader = document.createElement('th');
-        tHeader.textContent = column.label ? column.label : Utils.uc(column.data);
-        tRow.appendChild(tHeader);
-      });
-
-      tHead.appendChild(tRow);
-      this.$el.appendChild(tHead);
+      this.updateTableHeaders();
       this.addEventListeners();
     }
 
@@ -49,17 +40,73 @@ class JsTable {
     if (this.data) {
       this.populateTable(this.data);
     }
-    this.generatePages(10);
-    // this.showActionBar();
+    this.generatePages(this._pageLimit);
+    this.showActionBar();
 
     if (this.pagination) {
       this.showPaginationBar();
+      this.showHideBox();
     }
+  }
+
+  updateTableHeaders() {
+    let oldHead = this.$el.getElementsByTagName('thead')[0];
+    if (oldHead) {
+      oldHead.remove();
+    }
+    let tHead = document.createElement('thead');
+    let tRow = document.createElement('tr');
+
+    this.columns.forEach((column, key) => {
+      let tHeader = document.createElement('th');
+      tHeader.textContent = column.label ? column.label : Utils.uc(column.data);
+      tRow.appendChild(tHeader);
+    });
+
+    tHead.appendChild(tRow);
+    this.$el.appendChild(tHead);
   }
 
   showActionBar() {
     // let actionBar = document.createElement('div');
     // this.$el.parentElement.appendChild(actionBar);
+    let showHideBox = document.getElementById('data_table_show-columns');
+    showHideBox.addEventListener('click',(e) => {
+      let box = document.getElementById('data_table_show');
+      this._showHideBox = !this._showHideBox;
+      box.style.display = this._showHideBox ? 'block' : 'none';
+    });
+  }
+
+  showHideBox() {
+    let showHide = document.getElementById('data_table_show');
+    
+    this.columns.forEach((column, index) => {
+      console.log(column, index);
+      let col = document.createElement('label');
+      let checkBox = document.createElement('input');
+      checkBox.type = 'checkbox';
+      checkBox.checked = true;
+      checkBox.value = column.data;
+      checkBox.setAttribute('data-order', index);
+      col.append(checkBox, column.label ? column.label : Utils.uc(column.data));
+      col.classList.add('t-show__col');
+      showHide.appendChild(col);
+    });
+
+    showHide.addEventListener('change', (e) => {
+      console.log(e, e.target.checked)
+      if (e.target.checked === true) {
+        let i = e.target.getAttribute('data-order');
+        this.columns.splice(i, null, {data: e.target.value});
+      } else {
+        this.columns = this.columns.filter(col => {
+          return col.data !== e.target.value;
+        });
+      }
+      this.updateTableHeaders();
+      this.generatePages();
+    });
   }
 
   showPaginationBar() {
