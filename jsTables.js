@@ -13,8 +13,14 @@ const Utils = (function() {
 class JsTable {
   constructor(el, config) {
     this.$el = document.getElementById(el);
+    this.$actionBar = document.getElementById(`${el}_action`);
     this.data = config.data;
     this.columns = config.columns;
+    this.pagination = config.pagination || true ;
+
+    this._pages = {};
+    this._showingPage = 0;
+    this._pageLimit = 10;
 
     this.initialize();
   }
@@ -43,6 +49,111 @@ class JsTable {
     if (this.data) {
       this.populateTable(this.data);
     }
+    this.generatePages(10);
+    // this.showActionBar();
+
+    if (this.pagination) {
+      this.showPaginationBar();
+    }
+  }
+
+  showActionBar() {
+    // let actionBar = document.createElement('div');
+    // this.$el.parentElement.appendChild(actionBar);
+  }
+
+  showPaginationBar() {
+    // populate page navs
+    
+    let paginationBar = document.getElementById('data_table_pagination');
+    let paginationPrev = document.getElementById('data_table_pagination--prev')
+    let paginationNext = document.getElementById('data_table_pagination--next')
+
+    paginationBar.addEventListener('click', (e) => {
+      console.log(e);
+      if (e.target.tagName === 'A') {
+        let toPage = e.target.getAttribute('data-page');
+        const event = new CustomEvent('t:update', {
+          detail: {
+            showPage: toPage - 1
+          }
+        });
+        this.$el.dispatchEvent(event);
+      } else if (e.target.id === 'data_table_pagination--next') {
+        if (!e.target.classList.contains('disabled')) {
+          const event = new CustomEvent('t:update', {
+            detail: {
+              showPage: this._showingPage + 1
+            }
+          });
+          this.$el.dispatchEvent(event);
+        }
+      } else if (e.target.id === 'data_table_pagination--prev') {
+        if (!e.target.classList.contains('disabled')) {
+          const event = new CustomEvent('t:update', {
+            detail: {
+              showPage: this._showingPage - 1
+            }
+          });
+          this.$el.dispatchEvent(event);
+        }
+      }
+    });
+  }
+
+  updatePaginationBar() {
+    // #1 Pagination Nav pages
+    let navPages = document.getElementById('data_table_pagination--nav-pages');
+    navPages.innerHTML = '';
+    Object.keys(this._pages).forEach((key, index) => {
+      let forPage = document.createElement('a');
+      forPage.setAttribute('data-page', index + 1);
+      forPage.textContent = index + 1;
+      if (this._showingPage === index) {
+        forPage.classList.add('active');
+      }
+      navPages.appendChild(forPage);
+    });
+
+    let prevBtn = document.getElementById('data_table_pagination--prev');
+    let nextBtn = document.getElementById('data_table_pagination--next');
+
+    if (this._showingPage === Object.keys(this._pages).length - 1) {
+      nextBtn.classList.add('disabled');
+    } else {
+      nextBtn.classList.remove('disabled');
+    }
+
+    if (this._showingPage === 0) {
+      prevBtn.classList.add('disabled');
+    } else {
+      prevBtn.classList.remove('disabled');
+    }
+
+    // #2 Pagination Info
+    let pageInfo = document.getElementById('data_table_pagination--info');
+    let pageInfoUpdates = pageInfo.getElementsByTagName('span');
+    pageInfoUpdates[0].textContent = (this._showingPage * this._pageLimit) + 1;
+    pageInfoUpdates[1].textContent = Math.min((this._showingPage + 1) * this._pageLimit, this.data.length);
+    pageInfoUpdates[2].textContent = this.data.length;
+
+  }
+
+  generatePages(itemsPerPage) {
+    const pagination = {};
+    itemsPerPage = itemsPerPage || this.$actionBar.value;
+    // iterate over data
+    this.data.forEach((row, i) => {
+      // get first digit of divide item index by itemLimit
+      let page = parseInt(i / itemsPerPage);
+      // push to pagination object
+      pagination[page] = pagination[page] || [];
+      pagination[page].push(row);
+    });
+    console.log(pagination);
+    this._pages = pagination;
+    const event = new CustomEvent('t:update');
+    this.$el.dispatchEvent(event);
   }
 
   populateTable(data) {
@@ -84,6 +195,28 @@ class JsTable {
         e.target.classList.add(ariaSort);
       }
     });
+    this.$actionBar.addEventListener('change', (e) => {
+      if (e.target.tagName === 'SELECT') {
+        console.log(e) //children
+        this._pageLimit = e.target.value;
+        this.generatePages(e.target.value);
+        this.updatePaginationBar();
+      }
+    });
+
+    // Navigate to page
+    this.$el.addEventListener('t:update', (e) => {
+      if (this.pagination) {
+        let showPage = 0;
+        if (e.detail && e.detail.showPage) {
+          showPage = e.detail.showPage ;
+        }
+        this._showingPage = showPage;
+        console.log(this._showingPage)
+        this.populateTable(this._pages[showPage]);
+        this.updatePaginationBar();
+      }
+    });
   }
 
   sort(index, type) {
@@ -103,7 +236,7 @@ class JsTable {
       }
       return 0;      
     });
-    this.populateTable(this.data);
+    this.generatePages();
   }
 }
 

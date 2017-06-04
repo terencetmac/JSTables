@@ -15,6 +15,10 @@
       text-align: center;
     }
 
+    th {
+      cursor: pointer;
+    }
+
     th.ascending:after {
       content: '\25BC';
       font-size: 0.8em;
@@ -24,16 +28,66 @@
       content: '\25B2';
       font-size: 0.8em;
     }
+
+    .t-page {
+      padding: 10px;
+    }
+
+    .t-page__nav {
+      float: right;
+      text-align: right;
+      width: 50%;
+      cursor: pointer;
+    }
+
+    .t-page__nav a {
+      border: 1px solid #ccc;
+      padding: 5px;
+    }
+
+    .t-page__nav a.active {
+      background-color: #ddd;
+    }
+
+    .t-page__info {
+      float: left;
+      width: 45%;
+    }
+
+    .t-page__btn.disabled {
+      cursor: not-allowed;
+    }
+
   </style>
 
 </head>
 
 <body>
 
-  <table id="data_table" width=100%>
+  <div>
+    <label>Show 
+      <select id="data_table_action">
+        <option selected>10</option>
+        <option>20</option>
+        <option>50</option>
+        <option>100</option>
+      </select>
+       entries
+    </label>
+  </div>
+  <table id="data_table" width=100%></table>
+  <div id="data_table_pagination" class="t-page">
+    <div id="data_table_pagination--info" class="t-page__info">
+      Showing <span>1</span> to <span>20</span> of <span>40</span> entries.
+    </div>
+    <div id="data_table_pagination--nav" class="t-page__nav">
+      <span id="data_table_pagination--prev" class="t-page__btn">Previous</span>
+      <span id="data_table_pagination--nav-pages">
         
-  </table>
-  
+      </span>
+      <span id="data_table_pagination--next" class="t-page__btn">Next</span>
+    </div>
+  </div>
   <script src="sampleData.js"></script>
   <script src="jsTables.js"></script>
 </body>
