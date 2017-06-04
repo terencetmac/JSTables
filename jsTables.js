@@ -22,6 +22,7 @@ class JsTable {
     this._showingPage = 0;
     this._pageLimit = 10;
     this._showHideBox = false;
+    this._searchData;
 
     this.initialize();
   }
@@ -40,8 +41,9 @@ class JsTable {
     if (this.data) {
       this.populateTable(this.data);
     }
-    this.generatePages(this._pageLimit);
+    this.generatePages(this.data);
     this.showActionBar();
+    this.showSearch();
 
     if (this.pagination) {
       this.showPaginationBar();
@@ -78,11 +80,57 @@ class JsTable {
     });
   }
 
+  showSearch() {
+    let search = document.getElementById('data_table_search');
+    search.addEventListener('input', (e) => {
+      let target = e.target.value.toLowerCase();
+
+      this._searchData = this.data.filter(row => {
+        let found = false;
+        for (let key in row) {
+          let searchable = this.columns.filter(col => {
+            return col.data === key;
+          });
+          if (searchable.length === 0) {
+            continue;
+          }
+          // check each item in the object
+          if (row[key].toString().toLowerCase().indexOf(target) >= 0) {
+            found = true;
+          }
+        }
+        return found;
+      });
+
+      if (this._searchData.length > 0) {
+        return this.generatePages(this._searchData);
+      }
+
+      let tBody = document.createElement('tbody');
+      let tRow = document.createElement('tr');
+      let td = document.createElement('td');
+      td.textContent = 'No matching records found';
+      td.style.textAlign = 'center';
+      tRow.appendChild(td);
+      
+      this.$el.getElementsByTagName('tbody')[0].remove();
+      tBody.appendChild(tRow);
+      this.$el.appendChild(tBody);
+
+    });
+
+    search.addEventListener('keyup', (e) => {
+      if (e.keyCode === 27 && e.target.value) {
+        search.value = '';
+        this.generatePages();
+      }
+    })
+  }
+
   showHideBox() {
     let showHide = document.getElementById('data_table_show');
     
     this.columns.forEach((column, index) => {
-      console.log(column, index);
       let col = document.createElement('label');
       let checkBox = document.createElement('input');
       checkBox.type = 'checkbox';
@@ -186,18 +234,17 @@ class JsTable {
 
   }
 
-  generatePages(itemsPerPage) {
+  generatePages(data = this.data) {
     const pagination = {};
-    itemsPerPage = itemsPerPage || this.$actionBar.value;
-    // iterate over data
-    this.data.forEach((row, i) => {
+    const itemsPerPage = this._pageLimit;
+
+    data.forEach((row, i) => {
       // get first digit of divide item index by itemLimit
       let page = parseInt(i / itemsPerPage);
       // push to pagination object
       pagination[page] = pagination[page] || [];
       pagination[page].push(row);
     });
-    console.log(pagination);
     this._pages = pagination;
     const event = new CustomEvent('t:update');
     this.$el.dispatchEvent(event);
@@ -244,9 +291,8 @@ class JsTable {
     });
     this.$actionBar.addEventListener('change', (e) => {
       if (e.target.tagName === 'SELECT') {
-        console.log(e) //children
         this._pageLimit = e.target.value;
-        this.generatePages(e.target.value);
+        this.generatePages();
         this.updatePaginationBar();
       }
     });
@@ -270,7 +316,8 @@ class JsTable {
     let compare = type === 'ascending' ? 1 : -1;
     const key = this.columns[index].data;
     // for each data
-    this.data.sort((a, b) => {
+    let data = this._searchData.length > 0 ? this._searchData : this.data; 
+    data.sort((a, b) => {
       let aKey = typeof a[key] === 'string' ? a[key].toUpperCase() : a[key];
       let bKey = typeof b[key] === 'string' ? b[key].toUpperCase() : b[key]; 
 
@@ -283,7 +330,7 @@ class JsTable {
       }
       return 0;      
     });
-    this.generatePages();
+    this.generatePages(data);
   }
 }
 

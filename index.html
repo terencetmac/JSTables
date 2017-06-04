@@ -71,6 +71,11 @@
       cursor: pointer;
     }
 
+    .t-search {
+      float: right;
+      width: 40%;
+    }
+
   </style>
 
 </head>
@@ -90,6 +95,10 @@
 
     <span id="data_table_show-columns" class="t-show__toggle">Show Columns</span>
     <div id="data_table_show" class="t-show" style="display: none;"></div>
+
+    <div class="t-search">
+      <input type="text" placeholder="Search..." id="data_table_search" />
+    </div>
 
   </div>
   <table id="data_table" width=100%></table>
