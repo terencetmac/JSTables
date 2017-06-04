@@ -9,14 +9,32 @@
   <meta name="author" content="Terence Tham (terencetmac@gmail.com)">
 
   <!-- <link rel="stylesheet" href="css/styles.css"> -->
+  <link href="https://fonts.googleapis.com/css?family=Work+Sans:400,600" rel="stylesheet">
 
   <style type="text/css">
+
+    #data_table_wrapper {
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    table {
+      border-spacing: 0;
+    }
+
     thead {
       text-align: center;
     }
 
+    tbody {
+      font-weight: 400;
+    }
+
     th {
       cursor: pointer;
+      padding: 10px 5px;
+      border-bottom: 2px solid #7f8c8d;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     th.ascending:after {
@@ -29,20 +47,35 @@
       font-size: 0.8em;
     }
 
+    tr:nth-child(even) {
+      background-color: rgba(236, 240, 241, 0.5);
+    }
+
     td {
       position: relative;
+      padding: 10px 5px;
+      border-bottom: 2px dotted transparent;
+      white-space: nowrap;
+      overflow: ellipsis;
     }
 
     td:hover {
-      border-bottom: 1px dotted #ccc;
+      border-bottom: 2px dotted rgba(149, 165, 166, 0.5);
     }
 
     td[contenteditable=true] {
       background-color: #ccc;
     }
 
+    .t-action {
+      padding: 10px 5px;
+      overflow: hidden;
+    }
+
     .t-page {
-      padding: 10px;
+      border-top: 2px solid #7f8c8d;
+      padding: 10px 5px 25px 5px;
+      margin-bottom: 25px;
     }
 
     .t-page__nav {
@@ -52,13 +85,20 @@
       cursor: pointer;
     }
 
+    .t-page__pages {
+      padding: 0 10px;
+    }
+
     .t-page__nav a {
-      border: 1px solid #ccc;
-      padding: 5px;
+      margin-right: 5px;
     }
 
     .t-page__nav a.active {
-      background-color: #ddd;
+      background-color: rgba(149, 165, 166, 0.5);
+    }
+
+    .t-page__nav a:not(.active):not(.disabled):hover {
+      background-color: rgba(127, 140, 141, 0.8);
     }
 
     .t-page__info {
@@ -76,65 +116,69 @@
     }
 
     .t-show {
-      border: 1px solid #ccc;
+      border: 1px solid rgba(149, 165, 166, 0.5);
+      border-radius: 3px 0 3px 3px;
+      padding: 10px 5px;
+      position: absolute;
+      right: 13px;
+      top: 47px;
+      width: 25%;
+      background-color: white;
+      z-index: 1;
     }
 
-    .t-show__toggle {
-      cursor: pointer;
+    .t-show label {
+      padding: 5px;
     }
 
     .t-search {
-      float: right;
+      padding: 5px 10px;
+      display: inline-block;
       width: 40%;
+    }
+
+    .t-search__input {
+      width: 100%;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
     }
 
     .t-saveCancelBtn {
       position: absolute;
-      top: 0;
-      right: -25px;
       z-index: 25;
       background-color: white;
       border: 1px solid #ccc;
+      width: 50px;
+      height: 30px;
+      margin: 5px 5px 5px 0;
+      border-radius: 3px;
     }
 
+    .t-btn {
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .t-btn.t-btn-outline {
+    }
+
+    .t-btn.t-btn-outline.pressed {
+      border-radius: 3px 3px 0 0;
+      border-bottom-left-radius: 0;
+       background: rgba(149, 165, 166, 0.5);
+       -webkit-box-shadow: inset 0px 0px 4px #ccc;
+          -moz-box-shadow: inset 0px 0px 4px #ccc;
+               box-shadow: inset 0px 0px 4px #ccc;
+    }
   </style>
 
 </head>
 
 <body>
-
-  <div>
-    <label>Show 
-      <select id="data_table_action">
-        <option selected>10</option>
-        <option>20</optiofdsan>
-        <option>50</option>
-        <option>100</option>
-      </select>
-       entries
-    </label>
-
-    <span id="data_table_show-columns" class="t-show__toggle">Show Columns</span>
-    <div id="data_table_show" class="t-show" style="display: none;"></div>
-
-    <div class="t-search">
-      <input type="text" placeholder="Search..." id="data_table_search" />
-    </div>
-
-  </div>
-  <table id="data_table" width=100%></table>
-  <div id="data_table_pagination" class="t-page">
-    <div id="data_table_pagination--info" class="t-page__info">
-      Showing <span>1</span> to <span>20</span> of <span>40</span> entries.
-    </div>
-    <div id="data_table_pagination--nav" class="t-page__nav">
-      <span id="data_table_pagination--prev" class="t-page__btn">Previous</span>
-      <span id="data_table_pagination--nav-pages">
-        
-      </span>
-      <span id="data_table_pagination--next" class="t-page__btn">Next</span>
-    </div>
-  </div>
+    <table id="data_table"></table>
+    
   <script src="sampleData.js"></script>
   <script src="jsTables.js"></script>
 </body>

@@ -1,34 +1,52 @@
 const Utils = (function() {
-
-  var upperCase = function(input) {
+  const upperCase = function(input) {
     return input.substr(0, 1).toUpperCase() + input.substr(1);
   }
 
   return {
     uc: upperCase
   }
-
 })();
 
 class JsTable {
   constructor(el, config) {
+    this.name = el;
     this.$el = document.getElementById(el);
-    this.$actionBar = document.getElementById(`${el}_action`);
+    this.$wrapper;
     this.data = config.data;
     this.columns = config.columns;
-    this.pagination = config.pagination || true ;
+    this.columnProps = config.columnProps;
+    this.pagination = config.pagination || true;
+    // Defaults to first
+    this.pageLimit = config.pageLimit || [15, 10, 25, 50, 100];
 
     this._pages = {};
     this._showingPage = 0;
     this._pageLimit = 10;
     this._showHideBox = false;
-    this._searchData;
+    this._searchData = [];
     this._cellEditCache;
 
     this.initialize();
   }
 
   initialize() {
+    // Create Wrapper
+    const wrapper = document.createElement('div');
+    this.$wrapper = wrapper;
+    wrapper.id = `${this.name}_wrapper`;
+    this.$el.width = '100%';
+    this.$el.parentElement.insertBefore(wrapper, this.$el);
+    wrapper.appendChild(this.$el);
+
+    this.showActionBar();
+    this.showSearch();
+
+    if (this.pagination) {
+      this.showPaginationBar();
+      this.showHideBox();
+    }
+
     // #1 if no this.columns, what is default?
     
     // #2 if have this.columns
@@ -43,13 +61,6 @@ class JsTable {
       this.populateTable(this.data);
     }
     this.generatePages(this.data);
-    this.showActionBar();
-    this.showSearch();
-
-    if (this.pagination) {
-      this.showPaginationBar();
-      this.showHideBox();
-    }
   }
 
   updateTableHeaders() {
@@ -62,6 +73,10 @@ class JsTable {
 
     this.columns.forEach((column, key) => {
       let tHeader = document.createElement('th');
+
+      if (this.columnProps[key] && this.columnProps[key].width) {
+        tHeader.width = this.columnProps[key].width;
+      }
       tHeader.textContent = column.label ? column.label : Utils.uc(column.data);
       tRow.appendChild(tHeader);
     });
@@ -71,14 +86,92 @@ class JsTable {
   }
 
   showActionBar() {
-    // let actionBar = document.createElement('div');
-    // this.$el.parentElement.appendChild(actionBar);
-    let showHideBox = document.getElementById('data_table_show-columns');
-    showHideBox.addEventListener('click',(e) => {
-      let box = document.getElementById('data_table_show');
+    const actionBar = document.createElement('div');
+    actionBar.id = `${this.name}_actionBar`;
+
+    // Show table action
+    const actionBox = document.createElement('div');
+    const actionBoxLabel = document.createElement('label')
+    const actionBoxSelect = document.createElement('select');
+    actionBoxSelect.id = `${this.name}_action`;
+
+    const options = this.pageLimit.map((limit, i) => {
+      let lim = document.createElement('option');
+      if (i === 0) {
+        lim.selected = true;
+      }
+      lim.textContent = limit;
+      return lim;
+    });
+
+    options.sort((a, b) => {
+      const aKey = parseInt(a.textContent);
+      const bKey = parseInt(b.textContent);
+      if (aKey < bKey) {
+        return -1;
+      }
+      if (aKey > bKey) {
+        return 1;
+      }
+      return 0;
+    });
+
+    options.forEach(option => {
+      actionBoxSelect.appendChild(option);
+    });
+
+    actionBoxLabel.append('Show ', actionBoxSelect, ' entries');
+    actionBox.style.display = 'inline-block';
+
+    actionBar.addEventListener('change', (e) => {
+      if (e.target.tagName === 'SELECT') {
+        this._pageLimit = e.target.value;
+        this.generatePages();
+        this.updatePaginationBar();
+      }
+    });
+
+    actionBox.appendChild(actionBoxLabel);
+    actionBar.appendChild(actionBox);
+    
+    // Show showHide
+    const showHideToggle = document.createElement('span');
+    showHideToggle.id = `${this.name}_show--toggle`;
+    showHideToggle.classList.add('t-btn', 't-btn-outline');
+    showHideToggle.style.float = 'right';
+    showHideToggle.textContent = 'Show Columns';
+
+    const showHideDropdown = document.createElement('div');
+    showHideDropdown.id = `${this.name}_show--dropdown`;
+    showHideDropdown.classList.add('t-show');
+    showHideDropdown.style.display = 'none';
+
+    showHideToggle.appendChild(showHideDropdown);
+
+    actionBar.appendChild(showHideToggle);
+
+    showHideToggle.addEventListener('click',(e) => {
+      let box = document.getElementById('data_table_show--dropdown');
       this._showHideBox = !this._showHideBox;
       box.style.display = this._showHideBox ? 'block' : 'none';
+      showHideToggle.classList.toggle('pressed');
     });
+
+    // Show Search
+    const searchBox = document.createElement('div');
+    searchBox.id = `${this.name}_searchBox`;
+    searchBox.classList.add('t-search');
+
+    const searchInput = document.createElement('input');
+    searchInput.id = `${this.name}_search`;
+    searchInput.classList.add('t-search__input');
+    searchInput.type = 'text';
+    searchInput.placeholder = 'Search...';
+
+    searchBox.appendChild(searchInput);
+    actionBar.appendChild(searchBox);
+
+    this.$wrapper.insertBefore(actionBar, this.$el);
   }
 
   showSearch() {
@@ -107,11 +200,13 @@ class JsTable {
         return this.generatePages(this._searchData);
       }
 
-      let tBody = document.createElement('tbody');
-      let tRow = document.createElement('tr');
-      let td = document.createElement('td');
+      const colSpan = this.$el.getElementsByTagName('th').length;
+      const tBody = document.createElement('tbody');
+      const tRow = document.createElement('tr');
+      const td = document.createElement('td');
       td.textContent = 'No matching records found';
       td.style.textAlign = 'center';
+      td.setAttribute('colspan', colSpan);
       tRow.appendChild(td);
       
       this.$el.getElementsByTagName('tbody')[0].remove();
@@ -129,8 +224,8 @@ class JsTable {
   }
 
   showHideBox() {
-    let showHide = document.getElementById('data_table_show');
-    
+    let showHide = document.getElementById('data_table_show--dropdown');
+
     this.columns.forEach((column, index) => {
       let col = document.createElement('label');
       let checkBox = document.createElement('input');
@@ -159,16 +254,48 @@ class JsTable {
   }
 
   showPaginationBar() {
-    // populate page navs
     
-    let paginationBar = document.getElementById('data_table_pagination');
-    let paginationPrev = document.getElementById('data_table_pagination--prev')
-    let paginationNext = document.getElementById('data_table_pagination--next')
+    // Generate Page Navigation Bar components    
+    const paginationBar = document.createElement('div');
+    paginationBar.id = `${this.name}_pagination`;
+    paginationBar.classList.add('t-page');
+
+    // Generate Pagination Nav Component
+    const paginationNav = document.createElement('div');
+    paginationNav.id = `${this.name}_pagination--nav`;
+    paginationNav.classList.add('t-page__nav');
+    
+    const paginationPrev = document.createElement('a');
+    paginationPrev.id = `${this.name}_pagination--prev`;
+    paginationPrev.textContent = 'Previous';
+    paginationPrev.classList.add('t-page__btn', 't-btn');
+    
+    const paginationNext = document.createElement('a');
+    paginationNext.id = `${this.name}_pagination--next`;
+    paginationNext.textContent = 'Next';
+    paginationNext.classList.add('t-page__btn', 't-btn');
+    
+    const paginationPages = document.createElement('span');
+    paginationPages.id = `${this.name}_pagination--nav-pages`;
+    paginationPages.classList.add('t-page__pages');
+
+    paginationNav.appendChild(paginationPrev);
+    paginationNav.appendChild(paginationPages);
+    paginationNav.appendChild(paginationNext);
+
+    // Generate Pagination Info Component
+    const paginationInfo = document.createElement('div');
+    paginationInfo.id = `${this.name}_pagination--info`;
+    paginationInfo.classList.add('t-page__info');
+    paginationInfo.innerHTML = 'Showing <span>0</span> to <span>0</span> of <span>0</span> entries.';
+    
+    paginationBar.appendChild(paginationInfo);
+    paginationBar.appendChild(paginationNav);
 
     paginationBar.addEventListener('click', (e) => {
       console.log(e);
-      if (e.target.tagName === 'A') {
-        let toPage = e.target.getAttribute('data-page');
+      const toPage = e.target.getAttribute('data-page');
+      if (e.target.tagName === 'A' && toPage) {
         const event = new CustomEvent('t:update', {
           detail: {
             showPage: toPage - 1
@@ -195,6 +322,8 @@ class JsTable {
         }
       }
     });
+
+    this.$wrapper.appendChild(paginationBar);
   }
 
   updatePaginationBar() {
@@ -203,6 +332,7 @@ class JsTable {
     navPages.innerHTML = '';
     Object.keys(this._pages).forEach((key, index) => {
       let forPage = document.createElement('a');
+      forPage.classList.add('t-btn');
       forPage.setAttribute('data-page', index + 1);
       forPage.textContent = index + 1;
       if (this._showingPage === index) {
@@ -228,11 +358,15 @@ class JsTable {
 
     // #2 Pagination Info
     let pageInfo = document.getElementById('data_table_pagination--info');
+
+    // Count total entries
+    const totalEntries = Object.keys(this._pages).reduce((acc, val, i) => {
+      return acc + this._pages[val].length;
+    }, 0);
     let pageInfoUpdates = pageInfo.getElementsByTagName('span');
     pageInfoUpdates[0].textContent = (this._showingPage * this._pageLimit) + 1;
-    pageInfoUpdates[1].textContent = Math.min((this._showingPage + 1) * this._pageLimit, this.data.length);
-    pageInfoUpdates[2].textContent = this.data.length;
-
+    pageInfoUpdates[1].textContent = Math.min((this._showingPage + 1) * this._pageLimit, totalEntries);
+    pageInfoUpdates[2].textContent = totalEntries;
   }
 
   generatePages(data = this.data) {
@@ -303,31 +437,28 @@ class JsTable {
         // console.log(e.target.parentElement);
       }
     });
-    this.$actionBar.addEventListener('change', (e) => {
-      if (e.target.tagName === 'SELECT') {
-        this._pageLimit = e.target.value;
-        this.generatePages();
-        this.updatePaginationBar();
-      }
-    });
 
     this.$el.addEventListener('dblclick', (e) => {
       console.log(e);
-      if (e.target.tagName === 'TD' && e.target.children.length < 1 && document.getElementsByClassName('t-saveCancelBtn').length < 1) {
+      if (e.target.tagName === 'TD' && document.getElementsByClassName('t-saveCancelBtn').length < 1) {
+        e.target.focus();
         // cache data
         this._cellEditCache = e.target.textContent;
         e.target.setAttribute('contenteditable', true);
         let saveCancelBtn = document.createElement('div');
         let saveBtn = document.createElement('span');
         saveBtn.innerHTML = '&#10004;';
-        saveBtn.classList.add('t-saveBtn');
+        saveBtn.classList.add('t-saveBtn', 't-btn');
         let cancelBtn = document.createElement('span');
         cancelBtn.innerHTML = '&#10005;';
-        cancelBtn.classList.add('t-cancelBtn');
+        cancelBtn.classList.add('t-cancelBtn', 't-btn');
         saveCancelBtn.appendChild(saveBtn);
         saveCancelBtn.appendChild(cancelBtn);
         saveCancelBtn.classList.add('t-saveCancelBtn');
-        e.target.appendChild(saveCancelBtn);
+        saveCancelBtn.style.top = e.target.offsetTop + 'px';
+        console.log()
+        saveCancelBtn.style.left = e.target.offsetLeft + e.target.offsetWidth + 5 + 'px';
+        e.target.parentElement.appendChild(saveCancelBtn);
       }
     });
 
@@ -339,7 +470,6 @@ class JsTable {
           showPage = e.detail.showPage ;
         }
         this._showingPage = showPage;
-        console.log(this._showingPage)
         this.populateTable(this._pages[showPage]);
         this.updatePaginationBar();
       }
@@ -371,7 +501,6 @@ class JsTable {
 (function() {
 
   window.addEventListener('load', function() {
-    console.log('window.load')
     var table = new JsTable('data_table', {
       data: sampleData,
       columns: [
@@ -381,6 +510,14 @@ class JsTable {
         { data: 'age' },
         { data: 'start_date', label: 'Start Date' },
         { data: 'salary' }
+      ],
+      columnProps: [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
       ]
     });
   });
