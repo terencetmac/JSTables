@@ -23,6 +23,7 @@ class JsTable {
     this._pageLimit = 10;
     this._showHideBox = false;
     this._searchData;
+    this._cellEditCache;
 
     this.initialize();
   }
@@ -287,6 +288,19 @@ class JsTable {
         }
         e.target.setAttribute('aria-sort', ariaSort);
         e.target.classList.add(ariaSort);
+      } else if (e.target.classList.contains('t-saveBtn')) {
+        let targetCell = e.target.parentElement.parentElement;
+        targetCell.removeAttribute('contenteditable');
+        e.target.parentElement.remove();
+        // saving logic
+          // if content is same as cache, do nothing, otherwise, make ajax call
+      } else if (e.target.classList.contains('t-cancelBtn')) {
+        let targetCell = e.target.parentElement.parentElement;
+        targetCell.removeAttribute('contenteditable');
+        e.target.parentElement.remove();
+        targetCell.textContent = this._cellEditCache;
+        this._cellEditCache = '';
+        // console.log(e.target.parentElement);
       }
     });
     this.$actionBar.addEventListener('change', (e) => {
@@ -294,6 +308,26 @@ class JsTable {
         this._pageLimit = e.target.value;
         this.generatePages();
         this.updatePaginationBar();
+      }
+    });
+
+    this.$el.addEventListener('dblclick', (e) => {
+      console.log(e);
+      if (e.target.tagName === 'TD' && e.target.children.length < 1 && document.getElementsByClassName('t-saveCancelBtn').length < 1) {
+        // cache data
+        this._cellEditCache = e.target.textContent;
+        e.target.setAttribute('contenteditable', true);
+        let saveCancelBtn = document.createElement('div');
+        let saveBtn = document.createElement('span');
+        saveBtn.innerHTML = '&#10004;';
+        saveBtn.classList.add('t-saveBtn');
+        let cancelBtn = document.createElement('span');
+        cancelBtn.innerHTML = '&#10005;';
+        cancelBtn.classList.add('t-cancelBtn');
+        saveCancelBtn.appendChild(saveBtn);
+        saveCancelBtn.appendChild(cancelBtn);
+        saveCancelBtn.classList.add('t-saveCancelBtn');
+        e.target.appendChild(saveCancelBtn);
       }
     });
 
