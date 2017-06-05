@@ -15,7 +15,19 @@ A simple data table plugin written in plain Javascript. Not ready for production
 ```
 
 ## Config Options ##
-1. data (Array) -> Load your data as an array of objects
+1. Loading Data (2 options)  
+  i. As an array of objects -> data (Array)
+  ```
+    data: [{...}, {...}, {...}, {...}, {...}]
+  ```
+  ii. With AJAX  
+  Specify a URL in the `ajax` option. JsTable will send a GET request. Currently only works with JSON.  
+
+  If your data is nested within the results of the AJAX call, you have to specify a path to the data. Otherwise, you can leave this as an empty string.
+  ```
+    ajax: 'https://path.to.api.com/that-returns-json',
+    dataSrc: 'results.data'
+  ```
 2. columns (Array) -> Specify headers for your table based on your data object properties. You can specify a label to overwrite the property.
 ```
   columns: [
@@ -27,7 +39,7 @@ A simple data table plugin written in plain Javascript. Not ready for production
 3. columnProps (Array) -> Specify column properties. Must be the same length as columns, even if not specifying any properties.
 ```
   columnProps: [
-    { width: 20% },
+    { width: '20%' },
     null,
     null
   ]
