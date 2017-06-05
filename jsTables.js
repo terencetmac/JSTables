@@ -35,7 +35,7 @@ class JsTable {
     this.name = el;
     this.data = config.data;
     this.ajax = config.ajax;
-    this.dataSrc = config.dataSrc;
+    this.dataSrc = config.dataSrc || '';
     this.columns = config.columns;
     this.columnProps = config.columnProps;
     // Defaults to first
