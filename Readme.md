@@ -50,4 +50,4 @@ A simple data table plugin written in plain Javascript. Not ready for production
 2. Pagination
 3. Show and hide columns
 4. Search across columns
-5. Edit and save any cell
+5. Edit and save any cell (Currently only saves in-memory, does not persist)
