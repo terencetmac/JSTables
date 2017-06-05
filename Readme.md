@@ -51,5 +51,5 @@ A simple data table plugin written in plain Javascript. Not ready for production
 3. Show and hide columns
 4. Search across columns
 5. Edit and save any cell
- - Double click on a cell to edit.
- - Currently only saves in-memory, does not persist
+  - Double click on a cell to edit.
+  - Currently only saves in-memory, does not persist
