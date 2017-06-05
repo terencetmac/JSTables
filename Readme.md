@@ -16,14 +16,14 @@ A simple data table plugin written in plain Javascript. Not ready for production
 
 ## Config Options ##
 1. Loading Data (2 options)  
-  i. As an array of objects -> data (Array)
+  - As an array of objects -> data (Array)
   ```
     data: [{...}, {...}, {...}, {...}, {...}]
-  ```
-  ii. With AJAX  
-  Specify a URL in the `ajax` option. JsTable will send a GET request. Currently only works with JSON.  
+  ```  
+  - With AJAX  
+    Specify a URL in the `ajax` option. JsTable will send a GET request. Currently only works with JSON.  
 
-  If your data is nested within the results of the AJAX call, you have to specify a path to the data. Otherwise, you can leave this as an empty string.
+    If your data is nested within the results of the AJAX call, you have to specify a path to the data. Otherwise, you can leave this as an empty string.
   ```
     ajax: 'https://path.to.api.com/that-returns-json',
     dataSrc: 'results.data'
