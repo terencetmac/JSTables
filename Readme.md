@@ -50,6 +50,8 @@ A simple data table plugin written in plain Javascript. Not ready for production
 2. Pagination
 3. Show and hide columns
 4. Search across columns
+  - Enter and Escape keys Search and Clear search respectively.
 5. Edit and save any cell
+  - Enter, and Escape keys Save and Cancel respectively.
   - Double click on a cell to edit.
   - Currently only saves in-memory, does not persist
