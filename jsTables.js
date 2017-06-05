@@ -110,22 +110,29 @@ class JsTable {
   }
 
   initAjaxData() {
-    AJAX.fetch(this.ajax)
+    return AJAX.fetch(this.ajax)
       .then(result => {
         if (this.dataSrc) {
           const params = this.dataSrc.split('.');
           let dataSource = result;
           params.forEach(param => { 
-            dataSource = dataSource[param];
+            if (dataSource[param]) {
+              dataSource = dataSource[param];
+            } else {
+              throw new Error('JS Tables Error: Cannot read data. Did you correctly identify the dataSrc string in config?')
+            }
           });
           if (!dataSource) {
-            return console.error('JS Tables Error: Cannot read data. Did you correctly identify the dataSrc string in config?')
+            throw new Error('JS Tables Error: Cannot read data. Did you correctly identify the dataSrc string in config?')
           }
           this.data = dataSource;
         } else {
           this.data = result;
         }
         this.initData();
+      })
+      .catch(err => {
+        console.error('Error: ', err);
       });
   }
 

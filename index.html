@@ -19,7 +19,7 @@
       window.addEventListener('load', function() {
         const table = new JsTable('data_table', {
           data: sampleData,
-          // ajax: '/sampleData.json', // uncomment if can make ajax calls
+          ajax: '/sampleData.json', // uncomment if can make ajax calls
           dataSrc: 'results.data', // location of data
           columns: [
             { data: 'name' },
