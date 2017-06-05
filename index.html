@@ -14,5 +14,31 @@
 
   <script src="sampleData.js"></script>
   <script src="jsTables.js"></script>
+  <script>
+    (function() {
+      window.addEventListener('load', function() {
+        var table = new JsTable('data_table', {
+          data: sampleData,
+          columns: [
+            { data: 'name' },
+            { data: 'position' },
+            { data: 'office' },
+            { data: 'age' },
+            { data: 'start_date', label: 'Start Date' },
+            { data: 'salary' }
+          ],
+          columnProps: [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        });
+      });
+
+    })();
+  </script>
 </body>
 </html>

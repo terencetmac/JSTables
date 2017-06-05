@@ -1,96 +1,102 @@
 :root {
   --t-dark-grey: rgba(149, 165, 166, 0.5);
+  --t-button-hover: rgba(127, 140, 141, 0.8);
+  --t-border-outline: rgba(127, 140, 141, 1);
 }
 
 @import url(https://fonts.googleapis.com/css?family=Work+Sans:400,600);
 
-#data_table_wrapper {
+.jst {
   font-family: 'Work Sans', sans-serif;
 }
 
 .t-btn {
-  padding: 5px 10px;
   border-radius: 3px;
   cursor: pointer;
   display: inline-block;
+  padding: 5px 10px;
+}
+
+.t-btn:not(.active):not(.disabled):hover {
+  background-color: var(--t-button-hover);
 }
 
 .t-btn.t-btn-outline.pressed {
-  border-radius: 3px 3px 0 0;
+  background: var(--t-dark-grey);
   border-bottom-left-radius: 0;
-   background: var(--t-dark-grey);
+  border-radius: 3px 3px 0 0;
    -webkit-box-shadow: inset 0px 0px 4px #ccc;
       -moz-box-shadow: inset 0px 0px 4px #ccc;
            box-shadow: inset 0px 0px 4px #ccc;
 }
 
-table {
+.jst table {
   border-spacing: 0;
 }
 
-thead {
+.jst thead {
   text-align: center;
 }
 
-tbody {
+.jst tbody {
   font-weight: 400;
 }
 
-th {
+.jst tr:nth-child(even) {
+  background-color: rgba(236, 240, 241, 0.5);
+}
+
+.jst th {
+  border-bottom: 2px solid var(--t-border-outline);
   cursor: pointer;
-  padding: 10px 5px;
-  border-bottom: 2px solid #7f8c8d;
   font-weight: 600;
+  padding: 10px 5px;
   white-space: nowrap;
 }
 
-th.ascending:after {
+.jst th.ascending:after {
   content: '\25BC';
   font-size: 0.8em;
 }
 
-th.descending:after {
+.jst th.descending:after {
   content: '\25B2';
   font-size: 0.8em;
 }
 
-tr:nth-child(even) {
-  background-color: rgba(236, 240, 241, 0.5);
-}
-
-td {
-  position: relative;
-  padding: 10px 5px;
+.jst td {
   border-bottom: 2px dotted transparent;
-  white-space: nowrap;
   overflow: ellipsis;
+  padding: 10px 5px;
+  position: relative;
+  white-space: nowrap;
 }
 
-td:hover {
+.jst td:hover {
   border-bottom: 2px dotted var(--t-dark-grey);
 }
 
-td[contenteditable=true] {
+.jst td[contenteditable=true] {
   background-color: var(--t-dark-grey);
   border-radius: 5px;
 }
 
 .t-action {
-  padding: 10px 5px;
   overflow: hidden;
+  padding: 10px 5px;
 }
 
 .t-page {
-  border-top: 2px solid #7f8c8d;
-  padding: 10px 5px 25px 5px;
+  border-top: 2px solid var(--t-border-outline);
   margin-bottom: 25px;
+  padding: 10px 5px 25px 5px;
 }
 
 .t-page__nav {
+  cursor: pointer;
   float: right;
   text-align: right;
   width: 50%;
-  cursor: pointer;
 }
 
 .t-page__pages {
@@ -106,11 +112,7 @@ td[contenteditable=true] {
 }
 
 .t-page__nav a:not(.active):not(.disabled):hover {
-  background-color: rgba(127, 140, 141, 0.8);
-}
-
- .t-btn:not(.active):not(.disabled):hover {
-  background-color: rgba(127, 140, 141, 0.8);
+  background-color: var(--t-button-hover);
 }
 
 .t-page__info {
@@ -123,11 +125,12 @@ td[contenteditable=true] {
 }
 
 .t-show__col {
-  display: block;
   cursor: pointer;
+  display: block;
 }
 
 .t-show {
+  background-color: white;
   border: 1px solid var(--t-dark-grey);
   border-radius: 3px 0 3px 3px;
   padding: 10px 5px;
@@ -135,7 +138,6 @@ td[contenteditable=true] {
   right: 13px;
   top: 47px;
   width: 25%;
-  background-color: white;
   z-index: 1;
 }
 
@@ -144,27 +146,27 @@ td[contenteditable=true] {
 }
 
 .t-search {
-  padding: 5px 10px;
   display: inline-block;
+  padding: 5px 10px;
   width: 40%;
 }
 
 .t-search__input {
-  width: 100%;
+  border: 1px solid var(--t-border-outline);
   border-radius: 3px;
-  border: 1px solid #ccc;
   padding: 5px 10px;
+  width: 100%;
 }
 
 .t-saveCancelBtn {
-  position: absolute;
-  z-index: 25;
   background-color: white;
   border: 2px solid var(--t-dark-grey);
-  width: 66px;
-  height: 29px;
-  margin: 5px 5px 5px 0;
   border-radius: 0 5px 5px 0;
+  height: 28px;
+  margin: 5px 5px 5px 0;
+  position: absolute;
+  width: 66px;
+  z-index: 25;
 }
 
 .t-saveBtn:after {
