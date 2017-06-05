@@ -19,19 +19,23 @@ class JsTable {
     this.pagination = config.pagination || true;
     // Defaults to first
     this.pageLimit = config.pageLimit || [15, 10, 25, 50, 100];
+    this.rowId = config.rowId || null;
 
     this._pages = {};
     this._showingPage = 0;
     this._pageLimit = 10;
     this._showHideBox = false;
     this._searchData = [];
+    this._cellEditId = 0;
     this._cellEditCache;
+    this._rowIdPrefix = 'tId';
+    this._rowIdCounter = 1;  
 
     this.initialize();
   }
 
   initialize() {
-    // Create Wrapper
+    // Create Wrapper & Load Components
     const wrapper = document.createElement('div');
     this.$wrapper = wrapper;
     wrapper.id = `${this.name}_wrapper`;
@@ -47,8 +51,8 @@ class JsTable {
       this.showHideBox();
     }
 
+    // Process Data
     // #1 if no this.columns, what is default?
-    
     // #2 if have this.columns
     if (this.columns) {
       // generate Table Header
@@ -58,6 +62,12 @@ class JsTable {
 
     // Populate data
     if (this.data) {
+      // Add row IDs to Data
+      if (!this.rowId) {
+        this.data.forEach(row => {
+          row[this._rowIdPrefix] = this._rowIdCounter++;
+        });
+      }
       this.populateTable(this.data);
     }
     this.generatePages(this.data);
@@ -395,6 +405,7 @@ class JsTable {
     let tBody = document.createElement('tbody');
     data.forEach((dataRow) => {
       let tRow = document.createElement('tr');
+      tRow.setAttribute('data-tid', `${dataRow[this._rowIdPrefix]}`);
       // for sequence in columns
       this.columns.forEach((column, i) => {
         // grab the data[key] and populate the td
@@ -423,18 +434,26 @@ class JsTable {
         e.target.setAttribute('aria-sort', ariaSort);
         e.target.classList.add(ariaSort);
       } else if (e.target.classList.contains('t-saveBtn')) {
-        let targetCell = e.target.parentElement.parentElement;
+        const targetCell = e.target.parentElement.parentElement.childNodes[this._cellEdit[1]];
         targetCell.removeAttribute('contenteditable');
+        // if content is same as cache, do nothing, otherwise, make ajax call
+        if (targetCell.textContent !== this._cellEditCache) {
+          this.data.forEach(row => {
+            if (row[this._rowIdPrefix] === this._cellEdit[0]) {
+              // update the key
+              let key = this.columns[this._cellEdit[1]].data;
+              row[key] = targetCell.textContent;
+            }
+          })
+        }
         e.target.parentElement.remove();
-        // saving logic
-          // if content is same as cache, do nothing, otherwise, make ajax call
       } else if (e.target.classList.contains('t-cancelBtn')) {
-        let targetCell = e.target.parentElement.parentElement;
+        const targetCell = e.target.parentElement.parentElement.childNodes[this._cellEdit[1]];
         targetCell.removeAttribute('contenteditable');
-        e.target.parentElement.remove();
         targetCell.textContent = this._cellEditCache;
+        e.target.parentElement.remove();
         this._cellEditCache = '';
-        // console.log(e.target.parentElement);
+        this._cellEdit = [];
       }
     });
 
@@ -444,21 +463,26 @@ class JsTable {
         e.target.focus();
         // cache data
         this._cellEditCache = e.target.textContent;
+        this._cellEdit = [parseInt(e.target.parentElement.getAttribute('data-tid')), e.target.cellIndex];
         e.target.setAttribute('contenteditable', true);
         let saveCancelBtn = document.createElement('div');
         let saveBtn = document.createElement('span');
-        saveBtn.innerHTML = '&#10004;';
         saveBtn.classList.add('t-saveBtn', 't-btn');
         let cancelBtn = document.createElement('span');
-        cancelBtn.innerHTML = '&#10005;';
         cancelBtn.classList.add('t-cancelBtn', 't-btn');
         saveCancelBtn.appendChild(saveBtn);
         saveCancelBtn.appendChild(cancelBtn);
         saveCancelBtn.classList.add('t-saveCancelBtn');
-        saveCancelBtn.style.top = e.target.offsetTop + 'px';
-        console.log()
-        saveCancelBtn.style.left = e.target.offsetLeft + e.target.offsetWidth + 5 + 'px';
+        saveCancelBtn.style.top = e.target.offsetTop - 1 + 'px';
+        saveCancelBtn.style.left = e.target.offsetLeft + e.target.offsetWidth - 1 + 'px';
         e.target.parentElement.appendChild(saveCancelBtn);
+      }
+    });
+
+    this.$el.addEventListener('keydown', (e) => {
+      if (e.keyCode === 13) {
+        e.preventDefault();
+        console.log('Save cell')        
       }
     });
 
