@@ -19,6 +19,8 @@
       window.addEventListener('load', function() {
         const table = new JsTable('data_table', {
           data: sampleData,
+          // ajax: '/sampleData.json', // uncomment if can make ajax calls
+          dataSrc: 'results.data', // location of data
           columns: [
             { data: 'name' },
             { data: 'position' },
@@ -28,7 +30,7 @@
             { data: 'salary' }
           ],
           columnProps: [
-            null,
+            { width: '250px' },
             null,
             null,
             null,

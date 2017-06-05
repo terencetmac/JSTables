@@ -32,6 +32,7 @@
 
 .jst table {
   border-spacing: 0;
+  /*table-layout: fixed;*/
 }
 
 .jst thead {
@@ -66,9 +67,11 @@
 
 .jst td {
   border-bottom: 2px dotted transparent;
-  overflow: ellipsis;
+  max-width: 0;
+  overflow: hidden; /* vs. scroll */
   padding: 10px 5px;
   position: relative;
+  text-overflow: clip;
   white-space: nowrap;
 }
 
@@ -94,9 +97,9 @@
 
 .t-page__nav {
   cursor: pointer;
-  float: right;
-  text-align: right;
-  width: 50%;
+  padding: 10px;
+  text-align: center;
+  width: 100%;
 }
 
 .t-page__pages {
@@ -116,8 +119,8 @@
 }
 
 .t-page__info {
-  float: left;
-  width: 45%;
+  text-align: center;
+  padding: 5px;
 }
 
 .t-page__btn.disabled {

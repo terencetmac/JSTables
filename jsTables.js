@@ -8,12 +8,34 @@ const Utils = (function() {
   }
 })();
 
+const AJAX = (function() {
+  const request = function(url) {
+    const config = {
+      method: 'GET',
+      mode: 'cors'
+    }
+    return fetch(url, config)
+      .then(response => {
+        return response.json();
+      })
+      .catch(err => {
+        console.log('Error retrieving data: ', err);
+      });
+  }
+
+  return {
+    fetch: request
+  }
+})();
+
 class JsTable {
   constructor(el, config) {
     this.$el = document.getElementById(el);
     this.$wrapper;
     this.name = el;
     this.data = config.data;
+    this.ajax = config.ajax;
+    this.dataSrc = config.dataSrc;
     this.columns = config.columns;
     this.columnProps = config.columnProps;
     // Defaults to first
@@ -66,16 +88,45 @@ class JsTable {
       this.addTableEventListeners();
     }
 
-    // Populate data
-    if (this.data) {
-      if (!this.rowId) {
-      // Add row IDs to Data
-        this.data.forEach(row => {
-          row[this._rowIdPrefix] = this._rowIdCounter++;
-        });
-      }
-      this.generatePages(this.data);
+    if (this.ajax) {
+      this.initAjaxData();
+    } else if (!this.ajax && this.data) {
+      this.initData();
     }
+  }
+
+  initData() {
+    if (typeof this.data.forEach === 'undefined') {
+      return console.error('JS Tables Error: Cannot read data. Did you correctly identify the dataSrc string in config?')
+    }
+
+    if (!this.rowId) {
+    // Add row IDs to Data
+      this.data.forEach(row => {
+        row[this._rowIdPrefix] = this._rowIdCounter++;
+      });
+    }
+    this.generatePages(this.data);
+  }
+
+  initAjaxData() {
+    AJAX.fetch(this.ajax)
+      .then(result => {
+        if (this.dataSrc) {
+          const params = this.dataSrc.split('.');
+          let dataSource = result;
+          params.forEach(param => { 
+            dataSource = dataSource[param];
+          });
+          if (!dataSource) {
+            return console.error('JS Tables Error: Cannot read data. Did you correctly identify the dataSrc string in config?')
+          }
+          this.data = dataSource;
+        } else {
+          this.data = result;
+        }
+        this.initData();
+      });
   }
 
   showActionBar() {
@@ -427,7 +478,7 @@ class JsTable {
         });
         if (searchable.length > 0) {
           // Check if the target is found in the column's value
-          if (row[key].toString().toLowerCase().indexOf(target) >= 0) {
+          if (row[key] && row[key].toString().toLowerCase().indexOf(target) >= 0) {
             found = true;
           }
         }
