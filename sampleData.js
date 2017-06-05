@@ -332,4 +332,4 @@ var sampleData = [
     salary: '$645,750',
     email: 'thisemail@gmail.com'
   }
-];     
+];
